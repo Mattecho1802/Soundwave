@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#121212">
+  <title>Soundwave — Your music</title>
+  <style>
+    :root{color-scheme:dark;--bg:#000;--panel:#121212;--panel2:#181818;--muted:#a7a7a7;--green:#1ed760;--line:#2a2a2a}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    button,input{font:inherit}button{cursor:pointer;border:0;border-radius:999px;padding:10px 16px;font-weight:700}
+    button:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--green);color:#000}.secondary{background:#2a2a2a;color:#fff}.subtle{background:transparent;color:var(--muted);padding:8px}.subtle:hover{color:#fff}
+    input{background:#242424;border:1px solid #3a3a3a;color:#fff;border-radius:8px;padding:11px 12px;min-width:0;width:100%}
+    input:focus{outline:2px solid var(--green);outline-offset:1px}
+    .shell{display:grid;grid-template-columns:235px minmax(0,1fr);gap:8px;height:calc(100vh - 94px);padding:8px}
+    .sidebar,.main{background:var(--panel);border-radius:9px;min-height:0}.sidebar{padding:22px 12px;display:flex;flex-direction:column;gap:22px}
+    .brand{font-size:22px;font-weight:900;letter-spacing:-.8px;padding:0 10px}.brand span{color:var(--green)}
+    .nav{display:grid;gap:8px}.nav button{border-radius:7px;text-align:left;background:transparent;color:var(--muted);padding:10px}.nav button.active,.nav button:hover{color:#fff;background:#242424}
+    .library-head{display:flex;align-items:center;justify-content:space-between;padding:0 8px;color:var(--muted);font-weight:700}
+    .library-list{display:grid;gap:5px;overflow:auto}.library-item{background:transparent;color:#ddd;text-align:left;border-radius:6px;padding:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.library-item:hover{background:#242424}
+    .main{overflow:auto;background:linear-gradient(180deg,#243a2d 0,#171717 260px,#121212 520px);padding:24px clamp(16px,3vw,36px) 32px}
+    .topbar{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-bottom:28px}.topbar .search{max-width:420px}.account{display:flex;gap:8px;align-items:center}
+    h1{font-size:clamp(28px,4vw,42px);letter-spacing:-1.5px;margin:0 0 8px}h2{font-size:22px;margin:28px 0 14px}.muted{color:var(--muted)}.small{font-size:12px}.hero{margin-bottom:26px}.hero p{margin:0;color:#ddd}
+    .upload-panel{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#ffffff0d;border:1px solid #ffffff18;padding:16px;border-radius:10px}
+    .upload-panel .hint{flex:1;min-width:180px}.upload-panel strong{display:block}.upload-panel p{margin:3px 0 0;color:var(--muted);font-size:13px}
+    .song-table{width:100%;border-collapse:collapse}.song-table th{text-align:left;color:var(--muted);font-size:12px;font-weight:500;border-bottom:1px solid var(--line);padding:10px}.song-table td{padding:10px;border-bottom:1px solid #ffffff0b}.song-table tr:hover td{background:#ffffff0a}.song-title{font-weight:650}.song-artist{color:var(--muted);font-size:13px}.play-row{background:transparent;color:var(--green);padding:6px 10px}.empty{padding:28px 12px;color:var(--muted);text-align:center;border:1px dashed #444;border-radius:10px}
+    .playlist-form{display:flex;gap:8px;max-width:520px}.playlist-form input{flex:1}.playlist-list{display:flex;gap:10px;flex-wrap:wrap}.playlist-card{background:#242424;border:1px solid #333;border-radius:8px;padding:14px;min-width:180px;max-width:260px}.playlist-card strong{display:block;margin-bottom:8px;overflow-wrap:anywhere}.playlist-card button{margin:4px 4px 0 0}
+    .auth-cover{position:fixed;inset:0;background:#000d;display:grid;place-items:center;padding:18px;z-index:10}.auth-card{width:min(420px,100%);background:#181818;border:1px solid #333;border-radius:14px;padding:26px;box-shadow:0 20px 70px #0009}.auth-card h2{margin:0 0 6px;font-size:26px}.auth-card p{color:var(--muted);margin:0 0 18px}.auth-form{display:grid;gap:10px}.auth-switch{display:flex;gap:8px;margin-bottom:18px}.auth-switch button{flex:1}.status{min-height:22px;color:#ddd;font-size:13px;margin-top:10px}.status.error{color:#ff9999}.status.success{color:var(--green)}
+    .player{height:86px;background:#090909;border-top:1px solid #252525;display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,1.4fr) minmax(0,1fr);align-items:center;gap:18px;padding:12px 22px}
+    .now-playing{min-width:0}.now-playing strong,.now-playing span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.now-playing span{color:var(--muted);font-size:12px}
+    .player-center{display:grid;justify-items:center;gap:5px}.controls{display:flex;align-items:center;gap:12px}.controls button{padding:5px 10px;background:transparent;color:#fff;font-size:18px}.controls .toggle{background:var(--green);color:#000;width:36px;height:36px;padding:0}
+    .progress{display:flex;align-items:center;gap:8px;width:100%;font-size:11px;color:var(--muted)}.progress input{padding:0;border:0;height:4px;accent-color:var(--green);background:#555}.volume{display:flex;align-items:center;justify-content:flex-end;gap:8px}.volume input{max-width:120px;padding:0;height:4px;accent-color:var(--green)}
+    .hidden{display:none!important}.notice{margin:12px 0;padding:12px;background:#2a2114;border:1px solid #624b25;border-radius:8px;color:#f5d9a6;font-size:13px}
+    @media(max-width:720px){.shell{grid-template-columns:64px minmax(0,1fr)}.sidebar{padding:16px 6px}.brand{font-size:0;padding:0;text-align:center}.brand:after{content:"S";font-size:22px;color:var(--green)}.nav button{font-size:0;text-align:center;padding:12px 2px}.nav button:before{font-size:17px}.nav button[data-page="home"]:before{content:"⌂"}.nav button[data-page="search"]:before{content:"⌕"}.nav button[data-page="library"]:before{content:"♫"}.library-head,.library-list,.side-note{display:none}.player{grid-template-columns:minmax(0,1fr) auto;padding:10px 12px;gap:8px}.player-center{grid-column:2;grid-row:1}.volume{display:none}.progress{display:none}.main{padding:18px 14px}.topbar{align-items:flex-start;flex-wrap:wrap}.topbar .search{order:3;max-width:none;flex-basis:100%}.song-table th:nth-child(3),.song-table td:nth-child(3){display:none}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">sound<span>wave</span></div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="active" data-page="home">Home</button>
+        <button data-page="search">Search</button>
+        <button data-page="library">Your Library</button>
+      </nav>
+      <div class="library-head"><span>Your library</span><span>♫</span></div>
+      <div id="sidebarPlaylists" class="library-list"></div>
+      <div class="side-note muted small" style="margin-top:auto;padding:8px">Your music, your library.</div>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div class="account"><span id="userLabel" class="muted small">Not signed in</span><button id="signOutBtn" class="secondary hidden">Sign out</button></div>
+        <input id="searchInput" class="search" type="search" placeholder="Search your uploaded music" aria-label="Search music">
+      </div>
+      <section class="hero">
+        <h1 id="pageTitle">Your music, your way.</h1>
+        <p id="pageSubtitle">Upload songs you have permission to store and listen to them on your devices.</p>
+      </section>
+      <section id="uploadPanel" class="upload-panel">
+        <div class="hint"><strong>Build your music library</strong><p>Choose audio files from your device. Files are stored privately in your account.</p></div>
+        <input id="fileInput" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac" multiple style="max-width:300px">
+        <button id="uploadBtn" class="primary">Upload songs</button>
+      </section>
+      <div id="appNotice" class="notice hidden"></div>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <section id="songsSection">
+        <h2 id="songsHeading">Your songs</h2>
+        <div id="songsContainer" class="empty">Sign in and upload your first songs to get started.</div>
+      </section>
+      <section id="playlistsSection">
+        <h2>Your playlists</h2>
+        <form id="playlistForm" class="playlist-form">
+          <input id="playlistName" maxlength="80" placeholder="New playlist name" aria-label="New playlist name" required>
+          <button class="secondary" type="submit">Create playlist</button>
+        </form>
+        <div id="playlistContainer" class="playlist-list" style="margin-top:14px"></div>
+      </section>
+    </main>
+  </div>
+  <footer class="player">
+    <div class="now-playing"><strong id="nowTitle">Nothing playing</strong><span id="nowArtist">Choose a song from your library</span></div>
+    <div class="player-center">
+      <div class="controls">
+        <button id="prevBtn" aria-label="Previous song" title="Previous">⏮</button>
+        <button id="playBtn" class="toggle" aria-label="Play or pause">▶</button>
+        <button id="nextBtn" aria-label="Next song" title="Next">⏭</button>
+      </div>
+      <div class="progress"><span id="currentTime">0:00</span><input id="seekBar" type="range" min="0" max="100" value="0" aria-label="Seek through song"><span id="duration">0:00</span></div>
+    </div>
+    <div class="volume"><span>🔊</span><input id="volumeBar" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volume"></div>
+  </footer>
+  <audio id="audio"></audio>
+
+  <div id="authCover" class="auth-cover">
+    <div class="auth-card">
+      <h2>Welcome to Soundwave</h2>
+      <p>Sign in to access your private music library from your devices.</p>
+      <div class="auth-switch"><button id="loginMode" class="primary">Log in</button><button id="signupMode" class="secondary">Create account</button></div>
+      <form id="authForm" class="auth-form">
+        <input id="emailInput" type="email" autocomplete="email" placeholder="Email address" required>
+        <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Password (at least 8 characters)" minlength="8" required>
+        <button id="authSubmit" class="primary" type="submit">Log in</button>
+      </form>
+      <div id="authStatus" class="status" role="status" aria-live="polite"></div>
+      <p class="small" style="margin:14px 0 0">Use a strong, unique password. Email confirmation may be required depending on your Supabase settings.</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // SETUP: Replace both values with your Supabase project's URL and anon/public key.
+    // Never put a service_role key in browser code.
+    const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_PUBLIC_KEY";
+    const BUCKET = "user-music";
+    const MAX_FILE_BYTES = 25 * 1024 * 1024; // 25 MB per file; adjust to match your storage limits.
+    const { createClient } = supabase;
+    const configured = !SUPABASE_URL.includes("YOUR_PROJECT_ID") && !SUPABASE_ANON_KEY.includes("YOUR_SUPABASE");
+    const db = configured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    const $ = id => document.getElementById(id);
+    const audio = $("audio");
+    let currentUser = null, songs = [], playlists = [], currentSongIndex = -1;
+    let authMode = "login", currentPage = "home", activePlaylistId = null;
+
+    function setStatus(message, type="") {
+      const el = $("status"); el.textContent = message; el.className = "status " + type;
+    }
+    function setAuthStatus(message, type="") {
+      const el = $("authStatus"); el.textContent = message; el.className = "status " + type;
+    }
+    function showNotice(message) { $("appNotice").textContent = message; $("appNotice").classList.remove("hidden"); }
+    function hideNotice() { $("appNotice").classList.add("hidden"); }
+    function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+    function fmtTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+      return Math.floor(seconds/60) + ":" + String(Math.floor(seconds%60)).padStart(2,"0");
+    }
+    function fileTitle(name) { return name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim() || name; }
+
+    function updateAuthUI() {
+      $("authCover").classList.toggle("hidden", !!currentUser);
+      $("userLabel").textContent = currentUser ? currentUser.email : "Not signed in";
+      $("signOutBtn").classList.toggle("hidden", !currentUser);
+      $("uploadBtn").disabled = !currentUser;
+      $("fileInput").disabled = !currentUser;
+      $("playlistName").disabled = !currentUser;
+    }
+    function setAuthMode(mode) {
+      authMode = mode;
+      $("loginMode").className = mode === "login" ? "primary" : "secondary";
+      $("signupMode").className = mode === "signup" ? "primary" : "secondary";
+      $("authSubmit").textContent = mode === "login" ? "Log in" : "Create account";
+      $("passwordInput").autocomplete = mode === "login" ? "current-password" : "new-password";
+      setAuthStatus("");
+    }
+    $("loginMode").addEventListener("click", () => setAuthMode("login"));
+    $("signupMode").addEventListener("click", () => setAuthMode("signup"));
+
+    $("authForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      if (!db) return setAuthStatus("Add your Supabase URL and anon/public key in index.html first.", "error");
+      const email = $("emailInput").value.trim(), password = $("passwordInput").value;
+      $("authSubmit").disabled = true; setAuthStatus("Please wait…");
+      try {
+        if (authMode === "signup") {
+          const { data, error } = await db.auth.signUp({email, password});
+          if (error) throw error;
+          if (data.session) setAuthStatus("Account created. Loading your library…", "success");
+          else setAuthStatus("Account created. Check your email to confirm, then log in.", "success");
+        } else {
+          const { error } = await db.auth.signInWithPassword({email, password});
+          if (error) throw error;
+          setAuthStatus("Signed in.", "success");
+        }
+      } catch (err) { setAuthStatus(err.message || "Authentication failed.", "error"); }
+      finally { $("authSubmit").disabled = false; }
+    });
+
+    $("signOutBtn").addEventListener("click", async () => {
+      if (!db) return;
+      await db.auth.signOut();
+      songs = []; playlists = []; currentUser = null; audio.pause(); audio.removeAttribute("src"); audio.load();
+      renderSongs(); renderPlaylists(); updateAuthUI(); setStatus("Signed out.");
+    });
+
+    async function loadLibrary() {
+      if (!currentUser) return;
+      setStatus("Loading your library…");
+      try {
+        const [songRes, playlistRes] = await Promise.all([
+          db.from("songs").select("id,user_id,title,artist,storage_path,created_at").order("created_at", {ascending:false}),
+          db.from("playlists").select("id,user_id,name,created_at").order("created_at", {ascending:false})
+        ]);
+        if (songRes.error) throw songRes.error;
+        if (playlistRes.error) throw playlistRes.error;
+        songs = songRes.data || []; playlists = playlistRes.data || [];
+        renderSongs(); renderPlaylists(); setStatus(`${songs.length} song${songs.length===1?"":"s"} in your library.`, "success");
+      } catch (err) { setStatus(err.message || "Could not load your library.", "error"); }
+    }
+
+    async function uploadFiles() {
+      if (!currentUser) return setStatus("Sign in before uploading.", "error");
+      const files = Array.from($("fileInput").files || []);
+      if (!files.length) return setStatus("Choose one or more audio files first.", "error");
+      $("uploadBtn").disabled = true;
+      let uploaded = 0, failures = [];
+      for (const file of files) {
+        if (!file.type.startsWith("audio/") && !/\.(mp3|m4a|aac|wav|ogg|flac|opus|webm)$/i.test(file.name)) {
+          failures.push(`${file.name}: not recognised as an audio file`); continue;
+        }
+        if (file.size > MAX_FILE_BYTES) { failures.push(`${file.name}: larger than 25 MB`); continue; }
+        const id = crypto.randomUUID();
+        const safeName = file.name.replace(/[^a-zA-Z0-9._ -]/g, "_").slice(-120) || "audio";
+        const path = `${currentUser.id}/${id}-${safeName}`;
+        try {
+          const { error: storageError } = await db.storage.from(BUCKET).upload(path, file, { upsert:false, contentType:file.type || "application/octet-stream" });
+          if (storageError) throw storageError;
+          const { error: rowError } = await db.from("songs").insert({
+            id, user_id: currentUser.id, title: fileTitle(file.name), artist: "Unknown artist", storage_path: path
+          });
+          if (rowError) {
+            await db.storage.from(BUCKET).remove([path]);
+            throw rowError;
+          }
+          uploaded++;
+        } catch (err) { failures.push(`${file.name}: ${err.message || "upload failed"}`); }
+      }
+      $("fileInput").value = ""; $("uploadBtn").disabled = false;
+      await loadLibrary();
+      if (failures.length) setStatus(`${uploaded} uploaded. ${failures.join(" | ")}`, "error");
+      else setStatus(`${uploaded} song${uploaded===1?"":"s"} uploaded to your account.`, "success");
+    }
+    $("uploadBtn").addEventListener("click", uploadFiles);
+
+    function filteredSongs() {
+      let list = songs;
+      if (activePlaylistId) {
+        const playlist = playlists.find(p => p.id === activePlaylistId);
+        if (playlist && playlist.items) list = playlist.items.map(id => songs.find(s => s.id === id)).filter(Boolean);
+      }
+      const q = $("searchInput").value.trim().toLowerCase();
+      if (q) list = list.filter(s => (s.title+" "+s.artist).toLowerCase().includes(q));
+      return list;
+    }
+    function renderSongs() {
+      const list = filteredSongs();
+      $("songsHeading").textContent = activePlaylistId ? (playlists.find(p=>p.id===activePlaylistId)?.name || "Playlist") : (currentPage === "search" ? "Search results" : "Your songs");
+      if (!currentUser) { $("songsContainer").className="empty"; $("songsContainer").textContent="Sign in to see your private music library."; return; }
+      if (!list.length) { $("songsContainer").className="empty"; $("songsContainer").textContent=songs.length ? "No songs match your search or playlist." : "No songs yet. Upload audio files above to get started."; return; }
+      $("songsContainer").className="";
+      $("songsContainer").innerHTML = `<table class="song-table"><thead><tr><th>#</th><th>Title</th><th>Artist</th><th>Play</th><th></th></tr></thead><tbody>${list.map((s,i)=>`<tr><td>${i+1}</td><td><div class="song-title">${esc(s.title)}</div><div class="song-artist">${esc(s.created_at ? new Date(s.created_at).toLocaleDateString() : "")}</div></td><td>${esc(s.artist || "Unknown artist")}</td><td><button class="play-row" data-play="${esc(s.id)}" aria-label="Play ${esc(s.title)}">▶</button></td><td><button class="subtle" data-add="${esc(s.id)}" title="Add to playlist">＋ Playlist</button></td></tr>`).join("")}</tbody></table>`;
+      $("songsContainer").querySelectorAll("[data-play]").forEach(b => b.addEventListener("click",()=>playSongById(b.dataset.play)));
+      $("songsContainer").querySelectorAll("[data-add]").forEach(b => b.addEventListener("click",()=>choosePlaylistForSong(b.dataset.add)));
+    }
+
+    function renderPlaylists() {
+      $("sidebarPlaylists").innerHTML = playlists.map(p=>`<button class="library-item" data-open-playlist="${esc(p.id)}">${esc(p.name)}</button>`).join("");
+      $("sidebarPlaylists").querySelectorAll("[data-open-playlist]").forEach(b=>b.addEventListener("click",()=>openPlaylist(b.dataset.openPlaylist)));
+      if (!currentUser) { $("playlistContainer").innerHTML = '<p class="muted small">Sign in to create playlists.</p>'; return; }
+      $("playlistContainer").innerHTML = playlists.length ? playlists.map(p=>`<div class="playlist-card"><strong>${esc(p.name)}</strong><span class="muted small">Playlist</span><div><button class="secondary" data-open-playlist="${esc(p.id)}">Open</button><button class="subtle" data-rename-playlist="${esc(p.id)}">Rename</button><button class="subtle" data-delete-playlist="${esc(p.id)}">Delete</button></div></div>`).join("") : '<p class="muted small">Your playlists will appear here.</p>';
+      $("playlistContainer").querySelectorAll("[data-open-playlist]").forEach(b=>b.addEventListener("click",()=>openPlaylist(b.dataset.openPlaylist)));
+      $("playlistContainer").querySelectorAll("[data-delete-playlist]").forEach(b=>b.addEventListener("click",()=>deletePlaylist(b.dataset.deletePlaylist)));
+      $("playlistContainer").querySelectorAll("[data-rename-playlist]").forEach(b=>b.addEventListener("click",()=>renamePlaylist(b.dataset.renamePlaylist)));
+    }
+    async function createPlaylist(name) {
+      const {error} = await db.from("playlists").insert({user_id:currentUser.id,name});
+      if (error) throw error;
+      await loadLibrary();
+    }
+    $("playlistForm").addEventListener("submit",async e=>{
+      e.preventDefault(); if(!currentUser) return setStatus("Sign in to create playlists.","error");
+      const name=$("playlistName").value.trim(); if(!name) return;
+      try { await createPlaylist(name); $("playlistName").value=""; setStatus("Playlist created.","success"); }
+      catch(err){setStatus(err.message || "Could not create playlist.","error");}
+    });
+    async function deletePlaylist(id) {
+      const p=playlists.find(x=>x.id===id); if(!p || !confirm(`Delete playlist "${p.name}"? Songs will remain in your library.`)) return;
+      const {error}=await db.from("playlists").delete().eq("id",id);
+      if(error) return setStatus(error.message,"error");
+      if(activePlaylistId===id) activePlaylistId=null;
+      await loadLibrary(); setStatus("Playlist deleted.","success");
+    }
+    async function renamePlaylist(id) {
+      const p=playlists.find(x=>x.id===id); if(!p)return;
+      const name=prompt("New playlist name:",p.name); if(!name || !name.trim())return;
+      const {error}=await db.from("playlists").update({name:name.trim()}).eq("id",id);
+      if(error)return setStatus(error.message,"error");
+      await loadLibrary(); setStatus("Playlist renamed.","success");
+    }
+    async function openPlaylist(id) {
+      activePlaylistId=id;
+      const {data,error}=await db.from("playlist_items").select("song_id,position").eq("playlist_id",id).order("position");
+      if(error) {setStatus(error.message,"error");return;}
+      const p=playlists.find(x=>x.id===id); if(p)p.items=(data||[]).map(x=>x.song_id);
+      currentPage="library"; $("pageTitle").textContent=p?.name || "Playlist"; $("pageSubtitle").textContent="Songs in this playlist.";
+      renderSongs();
+    }
+    async function choosePlaylistForSong(songId) {
+      if(!playlists.length) return setStatus("Create a playlist first.","error");
+      const choices=playlists.map((p,i)=>`${i+1}. ${p.name}`).join("\n");
+      const answer=prompt("Add song to which playlist? Enter its number:\n"+choices);
+      const n=Number(answer); if(!Number.isInteger(n)||n<1||n>playlists.length)return;
+      const p=playlists[n-1];
+      const {data:existing,error:readErr}=await db.from("playlist_items").select("position").eq("playlist_id",p.id).order("position",{ascending:false}).limit(1);
+      if(readErr)return setStatus(readErr.message,"error");
+      const position=existing?.length ? existing[0].position+1 : 0;
+      const {error}=await db.from("playlist_items").insert({user_id:currentUser.id,playlist_id:p.id,song_id:songId,position});
+      if(error)return setStatus(error.message,"error");
+      if(activePlaylistId===p.id) await openPlaylist(p.id);
+      setStatus(`Added to ${p.name}.`,"success");
+    }
+
+    async function playSongById(id) {
+      const index=songs.findIndex(s=>s.id===id); if(index<0)return;
+      currentSongIndex=index; const song=songs[index];
+      setStatus("Preparing secure playback link…");
+      const {data,error}=await db.storage.from(BUCKET).createSignedUrl(song.storage_path,60*60);
+      if(error){setStatus(error.message,"error");return;}
+      audio.src=data.signedUrl; audio.volume=Number($("volumeBar").value);
+      $("nowTitle").textContent=song.title; $("nowArtist").textContent=song.artist||"Unknown artist";
+      try { await audio.play(); $("playBtn").textContent="Ⅱ"; setStatus(""); }
+      catch(err){setStatus("Playback was blocked by your browser. Press play to try again.","error");}
+    }
+    $("playBtn").addEventListener("click",async()=>{
+      if(!audio.src) { if(songs.length) await playSongById(songs[0].id); return; }
+      if(audio.paused){try{await audio.play();$("playBtn").textContent="Ⅱ";}catch(e){setStatus(e.message,"error");}}
+      else {audio.pause();$("playBtn").textContent="▶";}
+    });
+    $("prevBtn").addEventListener("click",()=>{if(!songs.length)return;let i=currentSongIndex<=0?songs.length-1:currentSongIndex-1;playSongById(songs[i].id);});
+    $("nextBtn").addEventListener("click",()=>{if(!songs.length)return;let i=currentSongIndex<0?0:(currentSongIndex+1)%songs.length;playSongById(songs[i].id);});
+    audio.addEventListener("ended",()=>{if(songs.length){let i=(currentSongIndex+1)%songs.length;playSongById(songs[i].id);}else $("playBtn").textContent="▶";});
+    audio.addEventListener("play",()=>$("playBtn").textContent="Ⅱ");
+    audio.addEventListener("pause",()=>$("playBtn").textContent="▶");
+    audio.addEventListener("timeupdate",()=>{
+      $("currentTime").textContent=fmtTime(audio.currentTime); $("duration").textContent=fmtTime(audio.duration);
+      if(Number.isFinite(audio.duration)&&audio.duration>0)$("seekBar").value=String(audio.currentTime/audio.duration*100);
+    });
+    $("seekBar").addEventListener("input",()=>{if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=Number($("seekBar").value)/100*audio.duration;});
+    $("volumeBar").addEventListener("input",()=>audio.volume=Number($("volumeBar").value));
+    $("searchInput").addEventListener("input",()=>{if($("searchInput").value.trim()){currentPage="search";$("pageTitle").textContent="Search";$("pageSubtitle").textContent="Find songs in your own library.";}renderSongs();});
+    document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>{
+      currentPage=b.dataset.page;activePlaylistId=null;
+      document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x===b));
+      const titles={home:["Your music, your way.","Upload songs you have permission to store and listen to them on your devices."],search:["Search","Find songs in your own library."],library:["Your Library","Your uploaded songs and playlists."]};
+      $("pageTitle").textContent=titles[currentPage][0];$("pageSubtitle").textContent=titles[currentPage][1];
+      if(currentPage!=="search")$("searchInput").value="";
+      renderSongs();
+    }));
+
+    async function init() {
+      if(!configured) {
+        showNotice("Setup required: create a Supabase project, run supabase-setup.sql, create the private 'user-music' storage bucket, then add your project URL and anon/public key in index.html. See README.md.");
+        updateAuthUI(); renderSongs(); renderPlaylists(); return;
+      }
+      const {data:{session}}=await db.auth.getSession();
+      currentUser=session?.user||null; updateAuthUI();
+      if(currentUser) await loadLibrary();
+      db.auth.onAuthStateChange((_event,session)=>{
+        currentUser=session?.user||null; updateAuthUI();
+        if(currentUser) setTimeout(loadLibrary,0);
+        else {songs=[];playlists=[];activePlaylistId=null;renderSongs();renderPlaylists();}
+      });
+    }
+    init();
+  </script>
+</body>
+</html>
